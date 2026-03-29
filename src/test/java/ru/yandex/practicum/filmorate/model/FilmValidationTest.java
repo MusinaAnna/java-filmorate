@@ -38,7 +38,7 @@ class FilmValidationTest {
     @Test
     void shouldFailWhenNameIsBlank() {
         Film film = new Film();
-        film.setName(""); // blank
+        film.setName("");
         film.setDescription("Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
@@ -52,7 +52,7 @@ class FilmValidationTest {
     void shouldFailWhenDescriptionExceedsMaxLength() {
         Film film = new Film();
         film.setName("Name");
-        film.setDescription("a".repeat(201)); // 201 characters
+        film.setDescription("a".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
 
@@ -69,9 +69,10 @@ class FilmValidationTest {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(120);
 
-
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertThat(violations).isEmpty();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessage())
+                .isEqualTo("Дата релиза не может быть раньше 28 декабря 1895 года");
     }
 
     @Test
@@ -97,7 +98,6 @@ class FilmValidationTest {
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertThat(violations).hasSize(1);
-
         assertThat(violations.iterator().next().getMessage()).isEqualTo("Продолжительность должна быть указана");
     }
 }
