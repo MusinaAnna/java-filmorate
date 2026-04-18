@@ -15,7 +15,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class Film {
-    private final Set<Long> likes = new HashSet<>();
     private Long id;
 
     @NotBlank(message = "Название не может быть пустым")
@@ -31,4 +30,6 @@ public class Film {
     @NotNull(message = "Продолжительность должна быть указана")
     @Positive(message = "Продолжительность должна быть положительной")
     private Integer duration;
+
+    private final Set<Long> likes = new HashSet<>();
 }

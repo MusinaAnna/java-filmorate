@@ -9,7 +9,6 @@ import java.util.HashSet;
 
 @Data
 public class User {
-    private final Set<Long> friends = new HashSet<>();
     private Long id;
 
     @NotBlank(message = "Email не может быть пустым")
@@ -24,4 +23,6 @@ public class User {
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+
+    private final Set<Long> friends = new HashSet<>();
 }
