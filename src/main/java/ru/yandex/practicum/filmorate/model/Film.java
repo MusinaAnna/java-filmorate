@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateConstraint;
+import java.util.Set;
+import java.util.HashSet;
 
 import java.time.LocalDate;
 
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class Film {
+    private final Set<Long> likes = new HashSet<>();
     private Long id;
 
     @NotBlank(message = "Название не может быть пустым")
