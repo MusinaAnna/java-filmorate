@@ -2,21 +2,23 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService {
     private final UserStorage userStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -42,38 +44,34 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        User user = findById(userId);
-        User friend = findById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-        log.info("Пользователи {} и {} стали друзьями", userId, friendId);
+        findById(userId);
+        findById(friendId);
+        String sql = "MERGE INTO friendship (user_id, friend_id, confirmed) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, userId, friendId, true);
+        log.info("Пользователь {} добавил в друзья {}", userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
-        User user = findById(userId);
-        User friend = findById(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-        log.info("Пользователи {} и {} перестали быть друзьями", userId, friendId);
+        findById(userId);
+        findById(friendId);
+        String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, userId, friendId);
+        log.info("Пользователь {} удалил из друзей {}", userId, friendId);
     }
 
     public List<User> getFriends(Long userId) {
-        User user = findById(userId);
-        return user.getFriends().stream()
-                .map(this::findById)
-                .collect(Collectors.toList());
+        findById(userId);
+        String sql = "SELECT u.* FROM users u " +
+                "JOIN friendship f ON u.id = f.friend_id " +
+                "WHERE f.user_id = ?";
+        return jdbcTemplate.query(sql, new UserDbStorage.UserRowMapper(), userId);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
-        User user = findById(userId);
-        User other = findById(otherId);
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherFriends = other.getFriends();
-
-        return userFriends.stream()
-                .filter(otherFriends::contains)
-                .map(this::findById)
-                .collect(Collectors.toList());
+        String sql = "SELECT u.* FROM users u " +
+                "JOIN friendship f1 ON u.id = f1.friend_id AND f1.user_id = ? " +
+                "JOIN friendship f2 ON u.id = f2.friend_id AND f2.user_id = ?";
+        return jdbcTemplate.query(sql, new UserDbStorage.UserRowMapper(), userId, otherId);
     }
 
     private void normalizeName(User user) {

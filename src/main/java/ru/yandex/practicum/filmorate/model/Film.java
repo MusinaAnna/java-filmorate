@@ -4,14 +4,10 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateConstraint;
-import java.util.Set;
-import java.util.HashSet;
-
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Film.
- */
 @Getter
 @Setter
 public class Film {
@@ -31,5 +27,7 @@ public class Film {
     @Positive(message = "Продолжительность должна быть положительной")
     private Integer duration;
 
-    private final Set<Long> likes = new HashSet<>();
+    private MpaRating mpa;
+
+    private List<Genre> genres = new ArrayList<>();
 }
