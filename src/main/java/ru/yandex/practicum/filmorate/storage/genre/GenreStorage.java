@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface GenreStorage {
     Collection<Genre> findAll();
+
     Optional<Genre> findById(Long id);
 }

@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface MpaStorage {
     Collection<MpaRating> findAll();
+
     Optional<MpaRating> findById(Long id);
 }
