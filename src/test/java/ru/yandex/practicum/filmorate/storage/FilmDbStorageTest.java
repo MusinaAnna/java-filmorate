@@ -6,18 +6,19 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
+
 import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 @JdbcTest
-@Import(FilmDbStorage.class)   // явно импортируем наш DAO
+@Import(FilmDbStorage.class)
 @Sql(scripts = {"/schema.sql", "/data.sql"})
 class FilmDbStorageTest {
 
@@ -25,7 +26,7 @@ class FilmDbStorageTest {
     private FilmDbStorage filmStorage;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;   // нужен для работы DAO, подставится автоматически
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     void testCreateFilm() {
@@ -34,9 +35,10 @@ class FilmDbStorageTest {
         assertThat(created.getId()).isNotNull();
         assertThat(created.getName()).isEqualTo("Test Film");
         assertThat(created.getMpa().getId()).isEqualTo(1);
-        assertThat(created.getGenres()).hasSize(2);
-        assertThat(created.getGenres().get(0).getId()).isEqualTo(1L);
-        assertThat(created.getGenres().get(1).getId()).isEqualTo(2L);
+        List<Genre> genres = new ArrayList<>(created.getGenres());
+        assertThat(genres).hasSize(2);
+        assertThat(genres.get(0).getId()).isEqualTo(1L);
+        assertThat(genres.get(1).getId()).isEqualTo(2L);
     }
 
     @Test
@@ -46,6 +48,10 @@ class FilmDbStorageTest {
         Optional<Film> found = filmStorage.findById(created.getId());
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo("Test Film");
+        List<Genre> genres = new ArrayList<>(found.get().getGenres());
+        assertThat(genres).hasSize(2);
+        assertThat(genres.get(0).getId()).isEqualTo(1L);
+        assertThat(genres.get(1).getId()).isEqualTo(2L);
     }
 
     @Test
@@ -57,6 +63,9 @@ class FilmDbStorageTest {
         filmStorage.create(film2);
         Collection<Film> films = filmStorage.findAll();
         assertThat(films).hasSize(2);
+        Film firstFilm = films.iterator().next();
+        List<Genre> genres = new ArrayList<>(firstFilm.getGenres());
+        assertThat(genres).hasSize(2);
     }
 
     @Test
@@ -97,14 +106,11 @@ class FilmDbStorageTest {
         MpaRating mpa = new MpaRating();
         mpa.setId(1L);
         film.setMpa(mpa);
-        List<Genre> genres = new ArrayList<>();
         Genre genre1 = new Genre();
         genre1.setId(1L);
         Genre genre2 = new Genre();
         genre2.setId(2L);
-        genres.add(genre1);
-        genres.add(genre2);
-        film.setGenres(genres);
+        film.setGenres(List.of(genre1, genre2));
         return film;
     }
 }

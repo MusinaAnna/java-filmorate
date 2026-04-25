@@ -5,8 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateConstraint;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -29,5 +30,13 @@ public class Film {
 
     private MpaRating mpa;
 
-    private List<Genre> genres = new ArrayList<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
+
+    public void setGenres(Collection<Genre> genres) {
+        this.genres = new LinkedHashSet<>(genres);
+    }
+
+    public Set<Genre> getGenres() {
+        return genres;
+    }
 }
